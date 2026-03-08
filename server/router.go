@@ -199,13 +199,13 @@ func (r *Server) getSchemaJSON(ctx context.Context) json.RawMessage {
 func parseHTTPRequest(reqHTTP *http.Request) (*ctypes.Request, ctypes.Method, error) {
 	method := ctypes.Method(reqHTTP.PathValue("method"))
 	if method == "" {
-		pathTrimmed := strings.Trim(reqHTTP.URL.Path, "/")
-		if pathTrimmed == "" {
+		path := strings.TrimRight(reqHTTP.URL.Path, "/")
+		idx := strings.LastIndexByte(path, '/')
+		if idx < 0 || idx == len(path)-1 {
 			return nil, "", errors.New("bad method")
 		}
 
-		parts := strings.Split(pathTrimmed, "/")
-		method = ctypes.Method(parts[len(parts)-1])
+		method = ctypes.Method(path[idx+1:])
 	}
 
 	if method == "" {
