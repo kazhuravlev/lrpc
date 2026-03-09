@@ -1,9 +1,9 @@
 package server_test
 
 import (
+	"encoding/json"
 	"testing"
 
-	"github.com/goccy/go-json"
 	"github.com/kazhuravlev/lrpc/ctypes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
