@@ -4,7 +4,7 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 )
 
-// Propagator returns a default propagator, that will connect all components with the same mechanism.
+// NewTextMapPropagator returns a default propagator, that will connect all components with the same mechanism.
 // It should be used in all places that require a propagator. Receives an optional list of additional propagators,
 // that will added to the default one. Use this only for some specific cases (usually for integration with
 // third-party or old systems).
