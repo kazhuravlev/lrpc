@@ -43,14 +43,29 @@ func New(opts Options) (*Server, error) {
 	}
 
 	tracer := opts.tracerProvider.Tracer(instrumentationName)
+	timeVec, err := metrics.RegisterCollector(
+		opts.registerer,
+		metrics.VecMethodExecDuration(opts.ns, opts.name, "requests", metrics.BucketFast()),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("register duration metrics: %w", err)
+	}
+
+	counterVec, err := metrics.RegisterCollector(
+		opts.registerer,
+		metrics.VecMethodExecCount(opts.ns, opts.name, "requests"),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("register counter metrics: %w", err)
+	}
 
 	return &Server{
 		opts:       opts,
 		routes:     make(map[ctypes.Method]HandlerSpec),
 		tracer:     tracer,
 		propagator: opts.propagator,
-		timeVec:    metrics.VecMethodExecDuration(opts.ns, opts.name, "requests", metrics.BucketFast()),
-		counterVec: metrics.VecMethodExecCount(opts.ns, opts.name, "requests"),
+		timeVec:    timeVec,
+		counterVec: counterVec,
 	}, nil
 }
 
