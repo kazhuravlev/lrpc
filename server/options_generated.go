@@ -8,6 +8,7 @@ import (
 
 	errors461e464ebed9 "github.com/kazhuravlev/options-gen/pkg/errors"
 	validator461e464ebed9 "github.com/kazhuravlev/options-gen/pkg/validator"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 type OptOptionsSetter func(o *Options)
@@ -23,6 +24,7 @@ func NewOptions(
 	o.name = defaultOptions.name
 	o.tracerProvider = defaultOptions.tracerProvider
 	o.propagator = defaultOptions.propagator
+	o.registerer = defaultOptions.registerer
 
 	for _, opt := range options {
 		opt(&o)
@@ -50,6 +52,10 @@ func WithPropagator(opt Propagator) OptOptionsSetter {
 	return func(o *Options) { o.propagator = opt }
 }
 
+func WithRegisterer(opt prometheus.Registerer) OptOptionsSetter {
+	return func(o *Options) { o.registerer = opt }
+}
+
 func (o *Options) Validate() error {
 	errs := new(errors461e464ebed9.ValidationErrors)
 	errs.Add(errors461e464ebed9.NewValidationError("logger", _validate_Options_logger(o)))
@@ -57,6 +63,7 @@ func (o *Options) Validate() error {
 	errs.Add(errors461e464ebed9.NewValidationError("name", _validate_Options_name(o)))
 	errs.Add(errors461e464ebed9.NewValidationError("tracerProvider", _validate_Options_tracerProvider(o)))
 	errs.Add(errors461e464ebed9.NewValidationError("propagator", _validate_Options_propagator(o)))
+	errs.Add(errors461e464ebed9.NewValidationError("registerer", _validate_Options_registerer(o)))
 	return errs.AsError()
 }
 
@@ -91,6 +98,13 @@ func _validate_Options_tracerProvider(o *Options) error {
 func _validate_Options_propagator(o *Options) error {
 	if err := validator461e464ebed9.GetValidatorFor(o).Var(o.propagator, "required"); err != nil {
 		return fmt461e464ebed9.Errorf("field `propagator` did not pass the test: %w", err)
+	}
+	return nil
+}
+
+func _validate_Options_registerer(o *Options) error {
+	if err := validator461e464ebed9.GetValidatorFor(o).Var(o.registerer, "required"); err != nil {
+		return fmt461e464ebed9.Errorf("field `registerer` did not pass the test: %w", err)
 	}
 	return nil
 }
