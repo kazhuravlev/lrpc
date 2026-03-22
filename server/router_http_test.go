@@ -11,6 +11,7 @@ import (
 
 	"github.com/kazhuravlev/just"
 	"github.com/kazhuravlev/lrpc/ctypes"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -179,4 +180,23 @@ func TestHTTPHandler(t *testing.T) {
 		handler.ServeHTTP(w, req)
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 	})
+}
+
+func TestNew_ReusesRegisteredMetricFamilies(t *testing.T) {
+	t.Parallel()
+
+	registry := prometheus.NewRegistry()
+	opts := NewOptions(
+		WithName("same-server"),
+		WithRegisterer(registry),
+	)
+
+	first, err := New(opts)
+	require.NoError(t, err)
+
+	second, err := New(opts)
+	require.NoError(t, err)
+
+	assert.Same(t, first.counterVec, second.counterVec)
+	assert.Same(t, first.timeVec, second.timeVec)
 }

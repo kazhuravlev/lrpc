@@ -5,14 +5,24 @@ import (
 	"time"
 
 	"github.com/kazhuravlev/lrpc/internal/metrics"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 //nolint:gochecknoglobals // avoid problems with benchmark mechanism
 var (
-	counterVec = metrics.VecMethodExecCount("namespace", "module", "name")
-	gaugeVec   = metrics.VecGauge("namespace", "module", "name")
-	histVec    = metrics.VecMethodExecDuration("namespace", "module", "name", metrics.BucketFast())
+	registry   = prometheus.NewRegistry()
+	counterVec = must(metrics.RegisterCollector(registry, metrics.VecMethodExecCount("namespace", "module", "name")))
+	gaugeVec   = must(metrics.RegisterCollector(registry, metrics.VecGauge("namespace", "module", "name")))
+	histVec    = must(metrics.RegisterCollector(registry, metrics.VecMethodExecDuration("namespace", "module", "name", metrics.BucketFast())))
 )
+
+func must[T any](val T, err error) T {
+	if err != nil {
+		panic(err)
+	}
+
+	return val
+}
 
 func BenchmarkPrometheusCounterVec(b *testing.B) {
 	counterVec.Reset()
